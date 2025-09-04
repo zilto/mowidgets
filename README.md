@@ -13,9 +13,9 @@ pip install mowidgets
 
 As an example, we create a simple widget that multiplies two numbers and displays the result.
 
-<div style="text-align: center;">
+<p align="center">
   <img src="static/basic.png" alt="screenshot of a mowidget" style="width: 70%;">
-</div>
+</p>
 
 1. Create a marimo notebook to define the widget.
 
@@ -23,9 +23,9 @@ As an example, we create a simple widget that multiplies two numbers and display
     marimo edit multiply.py  # widget module name
     ```
 
-  <div style="text-align: center;">
+  <p align="center">
     <img src="static/widget_definition.png" alt="screenshot of a mowidget" style="width: 70%;">
-  </div>
+  </p>
 
 2. Create a marimo notebook for the main app.
 
@@ -53,9 +53,9 @@ As an example, we create a simple widget that multiplies two numbers and display
 
 6. Now, if you use `mowidgets.widgetize(..., data_access=True)`, you can read the values exposed by the widget. You even get autocompletion!
 
-  <div style="text-align: center;">
+  <p align="center">
     <img src="static/data_access.png" alt="screenshot of a mowidget" style="width: 70%;">
-  </div>
+  </p>
 
 > See the `examples/` directory to see complete files.
 
