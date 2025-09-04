@@ -1,2 +1,3 @@
-def main() -> None:
-    print("Hello from mowidgets!")
+from mowidgets._widget import widgetize
+
+__all__ = ("widgetize",)
