@@ -48,10 +48,10 @@ As an example, we create a simple widget that multiplies two numbers and display
 5. Call `await` in front of the widget instance to render it.
 
     ```python
-    await multipler_widget
+    await multiply_widget
     ```
 
-6. Now, if you use `mowidgets.widgetize(..., data_access=True)`, you can read the values exposed by the widget. You even get autocompletion!
+6. Using `mowidgets.widgetize(..., data_access=True)` allows to read values exposed by the widget. You even get autocompletion!
 
   <p align="center">
     <img src="static/data_access.png" alt="screenshot of a mowidget" style="width: 70%;">
