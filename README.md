@@ -33,7 +33,7 @@ As an example, we create a simple widget that multiplies two numbers and display
     marimo edit app.py
     ```
 
-3. From the `multiply` (widget module name) Python module, import the `app` variable. It should be an instance of `marimo.App`. I suggest using a [setup cell](https://docs.marimo.io/guides/reusing_functions/#1-create-a-setup-cell).
+3. From the `multiply` (widget module name) Python module, import the `app` variable.
 
     ```python
     from multiply import app as multiply_app
@@ -58,6 +58,9 @@ As an example, we create a simple widget that multiplies two numbers and display
   </p>
 
 > See the `examples/` directory to see complete files.
+
+## Known limitations
+- Using a [setup cell](https://docs.marimo.io/guides/reusing_functions/#1-create-a-setup-cell) cell in the primary notebook seems to create issues where the widget blocks the primary execution loop. Replacing the setup cell by regular cell avoids the problem.
 
 ## Next steps
 - Pass starting values to the `MoWidget` instance. This would allow to compose widgets together. (Idea well-received by the core dev team)

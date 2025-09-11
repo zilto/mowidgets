@@ -15,7 +15,7 @@ def _():
 
     `mowidgets` makes it easy for libraries to distribute custom-built widgets for marimo notebooks.
 
-    This notebook shows how to use a widget packaged with the [dlt](https://github.com/dlt-hub/dlt) Python library. The widget allows to view the schema of loaded data.  
+    This notebook shows how to use a widget packaged with the [dlt](https://github.com/dlt-hub/dlt) Python library. The widget allows to view the pipeline state.
     """
     )
     return
@@ -26,7 +26,7 @@ def _():
     mo.md(
         r"""
     ## Running a `dlt` pipeline
-    First, we run a `dlt` pipeline to ingest data from a REST API. This will produce data to render with our widget. 
+    First, we run a `dlt` pipeline to ingest data from a REST API. This will produce data to render with our widget.
     """
     )
     return
@@ -57,7 +57,7 @@ def _():
     mo.md(
         r"""
     ## Use a dlt widget
-    Import `mowidgets` and retrieve the widget from `dlt.hepers.marimo.widgets`.
+    Import `mowidgets` and retrieve the widget from `dlt.hepers.marimo`
     """
     )
     return
@@ -66,37 +66,37 @@ def _():
 @app.cell
 def _():
     import mowidgets
-    from dlt.helpers.marimo.widgets import schema_viewer
-    return mowidgets, schema_viewer
+    from dlt.helpers.marimo import load_package_viewer
+    return load_package_viewer, mowidgets
 
 
 @app.cell(hide_code=True)
-def _():
+def _(mo):
     mo.md(r"""As required, by `mowidgets.widgetize()`, the object `schema_viewer` is a `marimo.App` object. In other words, it represents an entire marimo notebook.""")
     return
 
 
 @app.cell
-def _(schema_viewer):
-    type(schema_viewer)
+def _(load_package_viewer):
+    type(load_package_viewer)
     return
 
 
 @app.cell(hide_code=True)
-def _():
-    mo.md(r"""Call `mowidgets.widgetize()` on it to assign it to a variable. Use `await` in front of the object to render it! """)
+def _(mo):
+    mo.md(r"""Call `mowidgets.widgetize()` on it to assign it to a variable. Use `await` in front of the object to render it!""")
     return
 
 
 @app.cell
-def _(mowidgets, schema_viewer):
-    schema_viewer_widget = mowidgets.widgetize(schema_viewer)
-    return (schema_viewer_widget,)
+def _(load_package_viewer, mowidgets):
+    load_package_viewer_widget = mowidgets.widgetize(load_package_viewer)
+    return (load_package_viewer_widget,)
 
 
 @app.cell
-async def _(schema_viewer_widget):
-    await schema_viewer_widget
+async def _(load_package_viewer_widget):
+    await load_package_viewer_widget
     return
 
 
