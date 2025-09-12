@@ -7,7 +7,7 @@ license-files = ["LICENSE"]
 authors = [
     { name = "zilto", email = "68975210+zilto@users.noreply.github.com" },
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.9"  # matching marimo requirements
 dependencies = ["marimo>=0.12.1"]
 
 [project.urls]
