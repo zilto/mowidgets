@@ -7,10 +7,11 @@ app = marimo.App(width="medium")
 @app.cell
 def _():
     import marimo as mo
-    import mowidgets
-
     from file_browser import app as file_browser_app
     from multiply import app as multiply_app
+
+    import mowidgets
+
     return file_browser_app, mowidgets, multiply_app
 
 
@@ -23,7 +24,7 @@ async def _(file_browser_app, mowidgets):
 
 @app.cell
 async def _(mowidgets, multiply_app):
-    multiply_widget = mowidgets.widgetize(multiply_app, data_access="r")
+    multiply_widget = mowidgets.widgetize(multiply_app, data_access=True)
     await multiply_widget
     return (multiply_widget,)
 

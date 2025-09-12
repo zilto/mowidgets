@@ -125,7 +125,24 @@ unfixable = ["F401"]
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"**/{tests}/*" = ["ANN201", "ANN202", "T201", "D", "F841", "PLW1514"]
+"**/{tests}/*" = [
+    "ANN201",
+    "ANN202",
+    "T201",
+    "D",
+    "F841",
+    "PLW1514",
+]
+"{examples}/*" = [
+    "ANN201",
+    "ANN202",
+    "B018",
+    "F401",
+    "T201",
+    "D",
+    "F841",
+    "PLW1514",
+]
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
