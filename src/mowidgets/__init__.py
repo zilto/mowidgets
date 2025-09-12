@@ -1,3 +1,3 @@
-from mowidgets._widget import widgetize
+from mowidgets._widget import DisplayMoWidget, MoWidget, widgetize
 
-__all__ = ("widgetize",)
+__all__ = ("widgetize", "MoWidget", "DisplayMoWidget")
