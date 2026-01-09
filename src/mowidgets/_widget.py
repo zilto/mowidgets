@@ -12,9 +12,11 @@ if TYPE_CHECKING:
 
 class _MoWidgetBase:
     """Base class to create widgets. Implements common functionalities"""
-    def __init__(self, app: mo.App) -> None:
+
+    def __init__(self, app: mo.App, values: dict | None = None) -> None:
         self._app = app
         self._data = {}
+        self._values = values
 
     @final
     @property
@@ -26,7 +28,7 @@ class _MoWidgetBase:
 
     @final
     @data.setter
-    def data(self, value: Any) -> None:
+    def data(self, value: Any) -> None:  # noqa: ARG002
         raise RuntimeError("Can't set value on `.data`. Attribute is read-only.")
 
     @final
@@ -36,7 +38,11 @@ class _MoWidgetBase:
 
     async def _update(self) -> mo.Html:
         """This internal method allows you to assign data to the state to return it via `data`"""
-        result = await self._app.embed()
+        if self._values:
+            result = await self._app.embed(defs=self._values)
+        else:
+            result = await self._app.embed()
+
         self._data = _filter_defs(result.defs)
         return result.output
 
@@ -94,22 +100,22 @@ class DisplayMoWidget(_MoWidgetBase):
 
     async def _update(self) -> mo.Html:
         """Update doesn't store anything on `._data`"""
-        result = await self._app.embed()
+        result = await self._app.embed(defs=self._values)
         return result.output
 
 
 class FrozenDict(dict):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self._frozen = True
 
     def __setitem__(self, key, value):
-        if getattr(self, '_frozen', False):
+        if getattr(self, "_frozen", False):
             raise RuntimeError("`FrozenDict` is read-only. Can only set values at `__init__`.")
         super().__setitem__(key, value)
 
     def __delitem__(self, key):
-        if getattr(self, '_frozen', False):
+        if getattr(self, "_frozen", False):
             raise RuntimeError("`FrozenDict` is read-only. Can only delete values at `__init__`.")
         super().__delitem__(key)
 
@@ -143,7 +149,9 @@ def app_is_top_level_notebook_import(app: mo.App) -> bool:
     return False
 
 
-def widgetize(app: mo.App, *, data_access: bool = False) -> _MoWidgetBase:
+def widgetize(
+    app: mo.App, *, inputs: dict | None = None, data_access: bool = False
+) -> _MoWidgetBase:
     """Create a reusable `MoWidget` from a `marimo.App` instance. To properly
     refresh, the `marimo.App` variable needs to be imported in the context of
     the main notebook.
@@ -159,6 +167,8 @@ def widgetize(app: mo.App, *, data_access: bool = False) -> _MoWidgetBase:
         await w
         ```
     """
+    inputs = inputs if inputs else {}
+
     if isinstance(app, ModuleType):
         # inspect if the module received contains a marimo `App`
         retrieved_app = getattr(app, "app", None)
@@ -179,6 +189,6 @@ def widgetize(app: mo.App, *, data_access: bool = False) -> _MoWidgetBase:
         )
 
     if data_access:
-        return MoWidget(app=app)
+        return MoWidget(app=app, values=inputs)
     else:
-        return DisplayMoWidget(app=app)
+        return DisplayMoWidget(app=app, values=inputs)
