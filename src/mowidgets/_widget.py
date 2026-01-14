@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, final
 
@@ -13,10 +14,16 @@ if TYPE_CHECKING:
 class _MoWidgetBase:
     """Base class to create widgets. Implements common functionalities"""
 
-    def __init__(self, app: mo.App, values: dict | None = None) -> None:
+    def __init__(
+        self,
+        app: mo.App,
+        inputs: dict | None = None,
+        public_variables: list[str] | None = None,
+    ) -> None:
         self._app = app
         self._data = {}
-        self._values = values
+        self._inputs = inputs
+        self._public_variables = public_variables
 
     @final
     @property
@@ -32,18 +39,23 @@ class _MoWidgetBase:
         raise RuntimeError("Can't set value on `.data`. Attribute is read-only.")
 
     @final
+    @functools.cached_property
+    def input_names(self) -> set[str]:
+        return _get_setup_variable_names(self._app)
+
+    @final
     def _display_(self) -> str:
         """Prints a readable string to the marimo cell."""
         return "Use `await` before the `widget` instance or call `await widget.display()` to render it."
 
     async def _update(self) -> mo.Html:
         """This internal method allows you to assign data to the state to return it via `data`"""
-        if self._values:
-            result = await self._app.embed(defs=self._values)
+        if self._inputs:
+            result = await self._app.embed(defs=_get_setup_default_values(self._app) | self._inputs)
         else:
             result = await self._app.embed()
 
-        self._data = _filter_defs(result.defs)
+        self._data = _filter_defs(result.defs, allowed_defs=self._public_variables)
         return result.output
 
     @final
@@ -100,7 +112,7 @@ class DisplayMoWidget(_MoWidgetBase):
 
     async def _update(self) -> mo.Html:
         """Update doesn't store anything on `._data`"""
-        result = await self._app.embed(defs=self._values)
+        result = await self._app.embed(defs=self._inputs)
         return result.output
 
 
@@ -120,9 +132,10 @@ class FrozenDict(dict):
         super().__delitem__(key)
 
 
-def _filter_defs(defs: Mapping[str, Any]) -> dict[str, Any]:
+def _filter_defs(defs: Mapping[str, Any], allowed_defs: list[str] | None = None) -> dict[str, Any]:
     """Filter output data from the widget's `marimo.App`.
-    Excludes Python modules and marimo UI elements.
+
+    Excludes Python modules, marimo UI elements, and variables not found in `allowed_defs`
     """
     data = {}
     for k in defs:
@@ -134,12 +147,36 @@ def _filter_defs(defs: Mapping[str, Any]) -> dict[str, Any]:
         if isinstance(value, (ModuleType, UIElement)):
             continue
 
+        if allowed_defs is not None and k not in allowed_defs:
+            continue
+
         data[k] = value
 
     return data
 
 
+def _get_setup_default_values(app: mo.App) -> dict[str, Any]:
+    """Get the values defined in the setup cell"""
+    if not app._setup:
+        return {}
+    return app._setup._glbls
+
+
+def _get_setup_variable_names(app: mo.App) -> set[str]:
+    """Get the assigned variables in the setup cell. This excludes imports."""
+    variables = set()
+    for var_name in _get_setup_default_values(app):
+        var_types = app._graph.definition_registry.definition_types.get(var_name, set())
+        if "variable" in var_types:
+            variables.add(var_name)
+
+    return variables
+
+
 def app_is_top_level_notebook_import(app: mo.App) -> bool:
+    """Check if the `app` object was provided through the top-level
+    of a marimo notebook.
+    """
     import __main__
 
     for v in vars(__main__).values():
@@ -150,7 +187,11 @@ def app_is_top_level_notebook_import(app: mo.App) -> bool:
 
 
 def widgetize(
-    app: mo.App, *, inputs: dict | None = None, data_access: bool = False
+    app: mo.App,
+    *,
+    inputs: dict | None = None,
+    data_access: bool = False,
+    public_variables: list[str] | None = None,
 ) -> _MoWidgetBase:
     """Create a reusable `MoWidget` from a `marimo.App` instance. To properly
     refresh, the `marimo.App` variable needs to be imported in the context of
@@ -189,6 +230,6 @@ def widgetize(
         )
 
     if data_access:
-        return MoWidget(app=app, values=inputs)
+        return MoWidget(app=app, inputs=inputs, public_variables=public_variables)
     else:
-        return DisplayMoWidget(app=app, values=inputs)
+        return DisplayMoWidget(app=app, inputs=inputs)
