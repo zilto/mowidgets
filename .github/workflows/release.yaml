@@ -1,0 +1,62 @@
+name: Publish release
+
+on:
+  push:
+    # push a release when tagged with a semver
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+jobs:
+  publish_release:
+    name: Publish package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.1
+
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - uses: dorny/paths-filter@v3
+        id: changed
+        with:
+          # authorized changes include modifications to `pyproject.toml`
+          # and `uv.lock`; unauthorized changes include everything else;
+          # uses picomatch expressions
+          list-files: shell
+          filters: |
+            authorized:
+              - modified: '@(pyproject.toml|uv.lock)'
+            unauthorized:
+              - '!(@(pyproject.toml|uv.lock))'
+
+      - name: Exit early on unauthorized changes
+        if: steps.changed.outputs.unauthorized == 'true'
+        run: |
+          echo "Found unauthorized changes in files: ${{ steps.changed.outputs.unauthorized_files }}"
+          exit 1
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          activate-environment: true
+
+      - name: Build Python package
+        run: |
+          uv build
+          ls -lh dist/
+
+      - name: Publish to pypi
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish
+
+      - name: Install from pypi
+        # install mowidgets from pypi; step fails if cannot import `mowidgets`
+        # from official uv docs:  https://docs.astral.sh/uv/guides/package/#installing-your-package
+        run: uv run --with mowidgets --no-project -- python -c "import mowidgets"
