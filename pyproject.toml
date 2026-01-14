@@ -1,6 +1,6 @@
 [project]
 name = "mowidgets"
-version = "0.2.0"
+version = "0.2.1"
 description = "Reusable widgets for marimo notebooks"
 readme = "README.md"
 license-files = ["LICENSE"]
